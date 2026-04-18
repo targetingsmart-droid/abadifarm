@@ -12,9 +12,9 @@ import { Beef, ChefHat, ArrowDown, ShoppingBag } from "lucide-react";
 const TYPES = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"];
 
 const heroImages = [
-  "/images/slide-banner.jpg",
-  "/images/slide-tiers.jpg",
-  "/images/slide-goat.jpg",
+  "/images/slide-banner.png",
+  "/images/slide-tiers.png",
+  "/images/slide-goat.png",
 ];
 
 const staggerContainer = {
