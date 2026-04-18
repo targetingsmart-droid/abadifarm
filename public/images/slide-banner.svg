@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="50%" style="stop-color:#16213e"/>
+      <stop offset="100%" style="stop-color:#0f3460"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="500" fill="url(#bg)"/>
+  <text x="600" y="180" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#E9C46A" text-anchor="middle">ABADI FARM YOGYAKARTA</text>
+  <text x="600" y="260" font-family="Georgia, serif" font-size="32" fill="#d4d4d4" text-anchor="middle">Penyedia Kambing Kurban &amp; Aqiqah Berkualitas di Yogyakarta</text>
+  <text x="600" y="340" font-family="Arial, sans-serif" font-size="24" fill="#a0a0a0" text-anchor="middle">Hewan Sehat, Terawat, &amp; Sesuai Syariat</text>
+  <text x="600" y="450" font-family="Arial, sans-serif" font-size="14" fill="#666" text-anchor="middle">[ Placeholder - Replace with actual slide-banner.jpg ]</text>
+</svg>
