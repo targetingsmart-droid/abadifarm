@@ -218,8 +218,7 @@ export async function getServerSideProps() {
       props: {
         initialGoats: goats || [],
       },
-      // Revalidate setiap 60 detik (ISR - Incremental Static Regeneration)
-      revalidate: 60,
+  
     };
   } catch (err) {
     console.error("Error in getServerSideProps:", err);
