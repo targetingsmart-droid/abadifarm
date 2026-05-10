@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/hooks/use-toast";
@@ -24,30 +24,11 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 
-export default function LiveGoatsList() {
+export default function LiveGoatsList({ initialGoats }) {
   const { toast } = useToast();
-  const [goats, setGoats] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [goats, setGoats] = useState(initialGoats);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
-
-  const fetchGoats = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("live_goats")
-      .select("*")
-      .order("goat_number");
-    if (error) {
-      toast({ title: "Gagal memuat data: " + error.message, variant: "destructive" });
-    } else {
-      setGoats(data || []);
-    }
-    setLoading(false);
-  }, [toast]);
-
-  useEffect(() => {
-    fetchGoats();
-  }, [fetchGoats]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -64,7 +45,8 @@ export default function LiveGoatsList() {
       if (error) throw error;
       toast({ title: "Data berhasil dihapus" });
       setDeleteTarget(null);
-      fetchGoats();
+      // Update state langsung tanpa refetch dari server
+      setGoats(goats.filter((g) => g.id !== deleteTarget.id));
     } catch (err) {
       toast({ title: "Gagal menghapus: " + err.message, variant: "destructive" });
     } finally {
@@ -88,16 +70,7 @@ export default function LiveGoatsList() {
           </Link>
         </div>
 
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-16 bg-gray-100 rounded animate-pulse"
-              />
-            ))}
-          </div>
-        ) : goats.length === 0 ? (
+        {goats.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-xl border">
             <p className="text-text-secondary mb-4">
               Belum ada data. Tambahkan kambing pertama!
@@ -223,4 +196,37 @@ export default function LiveGoatsList() {
       </div>
     </>
   );
+}
+
+export async function getServerSideProps() {
+  try {
+    const { data: goats, error } = await supabase
+      .from("live_goats")
+      .select("*")
+      .order("goat_number");
+
+    if (error) {
+      console.error("Error fetching goats:", error);
+      return {
+        props: {
+          initialGoats: [],
+        },
+      };
+    }
+
+    return {
+      props: {
+        initialGoats: goats || [],
+      },
+      // Revalidate setiap 60 detik (ISR - Incremental Static Regeneration)
+      revalidate: 60,
+    };
+  } catch (err) {
+    console.error("Error in getServerSideProps:", err);
+    return {
+      props: {
+        initialGoats: [],
+      },
+    };
+  }
 }
