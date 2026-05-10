@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/hooks/use-toast";
@@ -24,30 +24,11 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 
-export default function CookedPackagesList() {
+export default function CookedPackagesList({ initialPackages }) {
   const { toast } = useToast();
-  const [packages, setPackages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [packages, setPackages] = useState(initialPackages);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
-
-  const fetchPackages = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("cooked_packages")
-      .select("*")
-      .order("type");
-    if (error) {
-      toast({ title: "Gagal memuat data: " + error.message, variant: "destructive" });
-    } else {
-      setPackages(data || []);
-    }
-    setLoading(false);
-  }, [toast]);
-
-  useEffect(() => {
-    fetchPackages();
-  }, [fetchPackages]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -64,7 +45,8 @@ export default function CookedPackagesList() {
       if (error) throw error;
       toast({ title: "Data berhasil dihapus" });
       setDeleteTarget(null);
-      fetchPackages();
+      // Update state langsung tanpa refetch dari server
+      setPackages(packages.filter((p) => p.id !== deleteTarget.id));
     } catch (err) {
       toast({ title: "Gagal menghapus: " + err.message, variant: "destructive" });
     } finally {
@@ -88,16 +70,7 @@ export default function CookedPackagesList() {
           </Link>
         </div>
 
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-16 bg-gray-100 rounded animate-pulse"
-              />
-            ))}
-          </div>
-        ) : packages.length === 0 ? (
+        {packages.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-xl border">
             <p className="text-text-secondary mb-4">
               Belum ada data. Tambahkan paket masak pertama!
@@ -222,4 +195,37 @@ export default function CookedPackagesList() {
       </div>
     </>
   );
+}
+
+export async function getServerSideProps() {
+  try {
+    const { data: packages, error } = await supabase
+      .from("cooked_packages")
+      .select("*")
+      .order("type");
+
+    if (error) {
+      console.error("Error fetching packages:", error);
+      return {
+        props: {
+          initialPackages: [],
+        },
+      };
+    }
+
+    return {
+      props: {
+        initialPackages: packages || [],
+      },
+      // Revalidate setiap 60 detik (ISR - Incremental Static Regeneration)
+      revalidate: 60,
+    };
+  } catch (err) {
+    console.error("Error in getServerSideProps:", err);
+    return {
+      props: {
+        initialPackages: [],
+      },
+    };
+  }
 }
